@@ -54,7 +54,7 @@ int main()
 	ofstream HFILE, PFILE, GRADES;
 
 	//Display effects
-	CONSOLE_FONT_INFOEX font;
+	/*CONSOLE_FONT_INFOEX font;
 	font.cbSize = sizeof(font);
 	font.nFont = 0;
 	font.dwFontSize.X = 10;
@@ -64,13 +64,13 @@ int main()
 	//wcscpy_s(font.FaceName, L"Calibri");
 	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &font);
 	//REFERENCES: https://docs.microsoft.com/en-us/windows/console/console-font-infoex
-	//			  https://stackoverflow.com/questions/35382432/how-to-change-the-console-font-size
+	//			  https://stackoverflow.com/questions/35382432/how-to-change-the-console-font-size*/
 
 	cout << "Welcome to the Mathematics Process Tracker! \n";
-	cout << "Would you like to work on practice problems (enter 0) or homework problems (enter 1)? \n";
+	cout << "Would you like to work on practice problems (enter 0) or homework problems (enter 1)?  ";
 	cin >> option;
 
-	cout << "First Name: ";
+	cout <<  endl << "First Name: ";
 	cin >> fName;
 	cout << "Last Name: ";
 	cin >> lName;
@@ -113,7 +113,7 @@ int main()
 		cout << "Practice Assignment: " << endl;
 		//Print header in output file
 		PFILE << "Practice Assignment" << endl << endl << fName << " " << lName << endl << "Professor " << instructor << endl
-			<< "Student Number " << ID << endl << "Problem " << ":\t";
+			<< "Student Number " << ID;
 
 
 		//continue through problems until the user wants to stop
@@ -125,17 +125,20 @@ int main()
 			while (!solution.empty())
 				solution.pop();
 
-			PFILE << assignmentVector.front() << endl << "Steps: " << endl;
+			PFILE << endl << endl << "Problem: " << assignmentVector.front() << endl << "Steps: " << endl;
 
 			solution = practice(solution, assignmentVector, practiceTracker);
 			fileStuff(PFILE, solution);
 			answer(solution, PFILE);
 
-			cout << endl << endl << "Would you like to begin another assignment / practice? (Enter 1 to continue, 0 to exit)" << endl;
+			cout << endl << endl << "Would you like to continue practicing? (Enter 1 to continue, 0 to exit)" << endl;
 			cin >> cont;
 
-		} while (cont);
+			//assignmentVector.erase(assignmentVector.begin());
 
+		} while (cont && !assignmentVector.empty());
+
+		cout << endl << "Thank you for completing this practice! Your file has been saved as PracticeFile.txt";
 	}
 	else if (option) //Homework
 	{
@@ -170,13 +173,41 @@ int main()
 			exit(1);
 		}
 
+		//Read professor's file into a vector
+		string line;
+		while (getline(ASSIGNMENT, line))
+		{
+			assignmentVector.push_back(line);
+		}
+
+		cout << "Homework Assignment: " << endl;
+
 		//Print header in output file
-		/*HFILE << fName << " " << lName << endl << "Professor " << instructor << endl
-			<< "Student Number " << ID << endl << "Problem " << problemNumber << ":\t" << endl;
-*/
-		solution = homework(solution, assignmentVector, homeworkTracker);
-		fileStuff(HFILE, solution);
-		answer(solution, HFILE);
+		PFILE << "Homework Assignment" << endl << endl << fName << " " << lName << endl << "Professor " << instructor << endl
+			<< "Student Number " << ID;
+
+		do 
+		{
+			system("cls");
+
+			//erase the queue
+			while (!solution.empty())
+				solution.pop();
+
+			HFILE << endl << endl << "Problem: " << assignmentVector.front() << endl << "Steps: " << endl;
+
+			solution = homework(solution, assignmentVector, homeworkTracker);
+			fileStuff(HFILE, solution);
+			answer(solution, HFILE);
+
+			cout << endl << endl << "Would you like to continue on the assignment? (Enter 1 to continue, 0 to exit)" << endl;
+			cin >> cont;
+
+			//assignmentVector.erase(assignmentVector.begin());
+
+		} while (cont && !assignmentVector.empty());
+
+		cout << endl << "Thank you for completing this assignment! Your file has been saved as HomeworkFile.txt";
 	}
 	else
 	{
@@ -223,8 +254,8 @@ queue<string> practice(queue<string> solution, vector<string>& assignmentVector,
 
 		solution.push(step);
 	}
-
 	return solution;
+
 }
 
 queue<string> homework(queue<string> solution, vector<string> assignmentVector, int hTracker)
@@ -232,12 +263,17 @@ queue<string> homework(queue<string> solution, vector<string> assignmentVector, 
 	hTracker++;
 	string step;
 
-	cout << "Please enter each step of your work. Press enter"
+	cout << "Problem: " << assignmentVector.front();
+	assignmentVector.erase(assignmentVector.begin());
+	cout << endl << "Please enter each step of your work. Press enter "
 		<< "between lines. Enter FINAL to finish the problem." << endl;
 
 	while (step != "FINAL")
 	{
 		cin >> step;
+		if (step == "FINAL")
+			continue;
+
 		solution.push(step);
 	}
 

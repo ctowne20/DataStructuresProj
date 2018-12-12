@@ -21,7 +21,7 @@ int main()
 		if (answer == 0)
 		{
 			system("cls");
-			probFileName = "practiceProblems.txt";
+			probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/practiceProblems.txt";
 			PROBLEMS.open(probFileName);
 
 			cout << "Enter problems below (without spaces)!" << endl <<
@@ -38,11 +38,11 @@ int main()
 
 			PROBLEMS.close();
 
-			cout << endl << "Thank you for entering the problems! Your file has been created as " << probFileName << endl << endl;
+			cout << endl << "Thank you for entering the problems! Your file has been created as practiceProblems.txt" << endl << endl; //<< probFileName << endl << endl;
 			cout << "Enter solutions for your problems below (without spaces)!" << endl <<
 				"Press Enter to move to the next problem. Enter 'END' to finish the answer key. " << endl << endl;
 
-			ansFileName = "practiceAnswers.txt";
+			ansFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/practiceAnswers.txt";
 			ANSWERS.open(ansFileName);
 
 			stop = 0;
@@ -57,13 +57,14 @@ int main()
 
 			ANSWERS.close();
 
-			cout << endl << "Thank you for entering the problems! Your file has been created as " << ansFileName << endl <<
-				"Happy grading! :)" << endl << endl;
+			cout << endl << "Thank you for entering the problems! Your file has been created as practiceAnswers.txt" //<< ansFileName << endl <<
+				<< endl << endl;
 		}
+
 		else if (answer == 1)
 		{
 			system("cls");
-			probFileName = "assignedProblems.txt";
+			probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/assignedProblems.txt";
 			PROBLEMS.open(probFileName);
 
 			cout << "Enter problems below (without spaces)!" << endl <<
@@ -80,11 +81,11 @@ int main()
 
 			PROBLEMS.close();
 
-			cout << endl << "Thank you for entering the problems! Your file has been created as " << probFileName << endl << endl;
+			cout << endl << "Thank you for entering the problems! Your file has been created as assignedProblems.txt" << endl << endl; //<< probFileName << endl << endl;
 			cout << "Enter solutions for your problems below (without spaces):" << endl <<
 				"Press Enter to move to the next problem. Enter 'END' to finish the answer key. " << endl << endl;
 
-			ansFileName = "assignmentAnswers.txt";
+			ansFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/assignmentAnswers.txt";
 			ANSWERS.open(ansFileName);
 
 			stop = 0;
@@ -99,7 +100,7 @@ int main()
 
 			ANSWERS.close();
 
-			cout << endl << "Thank you for entering the problems! Your file has been created as " << ansFileName << endl <<
+			cout << endl << "Thank you for entering the problems! Your file has been created as assignmentAnswers.txt" << endl << //<< ansFileName << endl <<
 				"Happy grading! :)" << endl << endl;
 		}
 		else

@@ -45,22 +45,23 @@ int main()
 {
 	queue<string> solution;
 	vector<string> assignmentVector;
-	string fileName, fName, lName, instructor, ID, problemNumber, userProblem;
+	string probFileName, outFileName, ansFileName, gradeFileName,
+		fName, lName, instructor, ID,  userProblem; //problemNumber,
 	bool option, cont = 0;
 	int practiceTracker = 0, homeworkTracker = 0;
 	//CTextSpeaker voice; //Text to Speech implementation??
-	ifstream assignment;
-	ofstream HFILE, PFILE;
+	ifstream ASSIGNMENT, ANSWERS;
+	ofstream HFILE, PFILE, GRADES;
 
 	//Display effects
 	CONSOLE_FONT_INFOEX font;
 	font.cbSize = sizeof(font);
 	font.nFont = 0;
-	font.dwFontSize.X = 0;
+	font.dwFontSize.X = 10;
 	font.dwFontSize.Y = 20;
 	font.FontFamily = FF_DONTCARE;
-	font.FontWeight = FW_NORMAL;
-	wcscpy_s(font.FaceName, L"Calibri");
+	font.FontWeight = 700;
+	//wcscpy_s(font.FaceName, L"Calibri");
 	SetCurrentConsoleFontEx(GetStdHandle(STD_OUTPUT_HANDLE), FALSE, &font);
 	//REFERENCES: https://docs.microsoft.com/en-us/windows/console/console-font-infoex
 	//			  https://stackoverflow.com/questions/35382432/how-to-change-the-console-font-size
@@ -80,34 +81,51 @@ int main()
 
 	if (!option) //Practice
 	{
-		fileName = "PracticeFile.txt";
-		PFILE.open(fileName);
+		probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/practiceProblems.txt"; 
+		outFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/PracticeFile.txt";
 
-		assignment.open("C:/Users/ctowne/Documents/Visual Studio 2017/practiceProblems.txt");
-		if (!assignment)
+		//open practice
+		PFILE.open(outFileName);
+		if (!PFILE)
 		{
-			cout << "Unable to open file" << endl;
+			cout << "Unable to open output file" << endl;
 			system("pause");
 			exit(1);
 		}
 
+		//Professor will provide a file with assignment problems. These lines open the file
+		ASSIGNMENT.open(probFileName); //"C:/Users/ctowne/Documents/Visual Studio 2017/practiceProblems.txt"
+		if (!ASSIGNMENT)
+		{
+			cout << "Unable to open problem file" << endl;
+			system("pause");
+			exit(1);
+		}
 
 		//Read professor's file into a vector
 		string line;
-		while (getline(assignment, line))
+		while (getline(ASSIGNMENT, line))
 		{
 			assignmentVector.push_back(line);
 		}
 
 
 		cout << "Practice Assignment: " << endl;
+		//Print header in output file
+		PFILE << "Practice Assignment" << endl << endl << fName << " " << lName << endl << "Professor " << instructor << endl
+			<< "Student Number " << ID << endl << "Problem " << ":\t";
 
+
+		//continue through problems until the user wants to stop
 		do 
 		{
 			system("cls");
-			//Print header in output file
-			PFILE << "Practice Assignment" << endl << endl << fName << " " << lName << endl << "Professor " << instructor << endl
-				<< "Student Number " << ID << endl << "Problem " << problemNumber << ":" << endl;
+			
+			//erase the queue
+			while (!solution.empty())
+				solution.pop();
+
+			PFILE << assignmentVector.front() << endl << "Steps: " << endl;
 
 			solution = practice(solution, assignmentVector, practiceTracker);
 			fileStuff(PFILE, solution);
@@ -121,25 +139,41 @@ int main()
 	}
 	else if (option) //Homework
 	{
-		fileName = "HomeworkFile.txt";
-		HFILE.open(fileName);
-
-		ofstream Grades;
-		string gradefileName = lName + "Grade";
-		Grades.open(gradefileName);
-
-		assignment.open("assignedProblems.txt");
-		if (!assignment)
+		outFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/HomeworkFile.txt";
+		probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/assignedProblems.txt";
+		
+		//open output file
+		HFILE.open(outFileName);
+		if (!HFILE)
 		{
-			cout << "Unable to open file" << endl;
+			cout << "Unable to open output file" << endl;
+			system("pause");
+			exit(1);
+		}
+
+		//open grades file
+		gradeFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/" + lName + "Grade.txt";
+		GRADES.open(gradeFileName);
+		if (!GRADES)
+		{
+			cout << "Unable to open grade file" << endl;
+			system("pause");
+			exit(1);
+		}
+
+		//open output problem file
+		ASSIGNMENT.open(probFileName);
+		if (!ASSIGNMENT)
+		{
+			cout << "Unable to open problem file" << endl;
 			system("pause");
 			exit(1);
 		}
 
 		//Print header in output file
-		HFILE << fName << " " << lName << endl << "Professor " << instructor << endl
-			<< "Student Number " << ID << endl << "Problem " << problemNumber << ":" << endl;
-
+		/*HFILE << fName << " " << lName << endl << "Professor " << instructor << endl
+			<< "Student Number " << ID << endl << "Problem " << problemNumber << ":\t" << endl;
+*/
 		solution = homework(solution, assignmentVector, homeworkTracker);
 		fileStuff(HFILE, solution);
 		answer(solution, HFILE);
@@ -154,8 +188,9 @@ int main()
 	//voice.Speak(Lproblem); //Text to speech implementation??
 	HFILE.close();
 	PFILE.close();
-	assignment.close();
+	ASSIGNMENT.close();
 
+	cout << endl;
 	system("pause");
 	return 0;
 }
@@ -164,7 +199,7 @@ int main()
 void answer(queue<string> solution, ofstream& FILE)
 {
 	cout << endl <<  "Final Solution: " << endl << solution.back();
-	FILE << endl <<  "Final Solution: " << endl << solution.back();
+	FILE << endl << endl <<  "Final Solution: " << endl << solution.back();
 }
 
 //read in user data for practice problems
@@ -180,11 +215,14 @@ queue<string> practice(queue<string> solution, vector<string>& assignmentVector,
 	cout << endl << "Please enter each step of your work. Press enter" 
 		<< " between lines. Enter FINAL to finish the problem." << endl;
 
-	do
+	while (step != "FINAL")
 	{
 		cin >> step;
+		if (step == "FINAL")
+			continue;
+
 		solution.push(step);
-	} while (step != "FINAL");
+	}
 
 	return solution;
 }
@@ -213,6 +251,6 @@ void fileStuff(ofstream& FILE, queue<string> solution)
 		//pop for queue elements and display them in the file
 		string temp = solution.front();
 		solution.pop();
-		FILE << temp << endl;
+		FILE << temp;
 	}
 }

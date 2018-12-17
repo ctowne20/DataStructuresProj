@@ -31,12 +31,15 @@ It could be altered to tackle problems in the realm of calculus, trigonometry, e
 #include <queue>
 #include <string>
 #include <vector>
+#include <ShlObj.h>
+#pragma comment (lib, "shell32.lib") // HELP ON FILE PATH:
+	//https://stackoverflow.com/questions/2414828/get-path-to-my-documents
 using namespace std;
 
 //EMAIL HELP https://www.emailarchitect.net/easendmail/ex/vc/14.aspx
 
 //Function prototypes
-void answer(queue<string> solution, ofstream& FILE);
+bool answer(queue<string> solution, ofstream& FILE, vector<string> answers);
 queue<string> practice(queue<string> solution, vector<string>& assignmentVector, int pTracker);
 queue<string> homework(queue<string> solution, vector<string> assignmentVector, int hTracker);
 void fileStuff(ofstream& FILE, queue<string> solution);
@@ -44,14 +47,18 @@ void fileStuff(ofstream& FILE, queue<string> solution);
 int main()
 {
 	queue<string> solution;
-	vector<string> assignmentVector;
+	vector<string> assignmentVector, answerVector;
 	string probFileName, outFileName, ansFileName, gradeFileName,
 		fName, lName, instructor, ID,  userProblem; //problemNumber,
 	bool option, cont = 0;
-	int practiceTracker = 0, homeworkTracker = 0;
+	int practiceTracker = 0, homeworkTracker = 0, gradeTracker = 0;;
 	//CTextSpeaker voice; //Text to Speech implementation??
 	ifstream ASSIGNMENT, ANSWERS;
 	ofstream HFILE, PFILE, GRADES;
+
+	CHAR my_documents[MAX_PATH];
+	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+	string myDocumentString(my_documents);
 
 	//Display effects
 	/*CONSOLE_FONT_INFOEX font;
@@ -81,14 +88,16 @@ int main()
 
 	if (!option) //Practice
 	{
-		probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/practiceProblems.txt"; 
-		outFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/PracticeFile.txt";
+		probFileName = myDocumentString + "/Visual Studio 2017/practiceProblems.txt"; 
+		outFileName = myDocumentString + "/Visual Studio 2017/PracticeFile.txt";
+		ansFileName = myDocumentString + "/Visual Studio 2017/practiceAnswers.txt";
+		gradeFileName = myDocumentString + "/Visual Studio 2017/" + lName + "GradeFile.txt";
 
 		//open practice
 		PFILE.open(outFileName);
 		if (!PFILE)
 		{
-			cout << "Unable to open output file" << endl;
+			cout << endl << "Unable to open output file" << endl;
 			system("pause");
 			exit(1);
 		}
@@ -102,6 +111,24 @@ int main()
 			exit(1);
 		}
 
+		//open problem answer file
+		ANSWERS.open(ansFileName);
+		if (!ANSWERS)
+		{
+			cout << "Unable to open problem file" << endl;
+			system("pause");
+			exit(1);
+		}
+
+		//open grade file
+		GRADES.open(gradeFileName);
+		if (!GRADES)
+		{
+			cout << "Unable to open problem file" << endl;
+			system("pause");
+			exit(1);
+		}
+
 		//Read professor's file into a vector
 		string line;
 		while (getline(ASSIGNMENT, line))
@@ -109,6 +136,12 @@ int main()
 			assignmentVector.push_back(line);
 		}
 
+		//Read professor's answer file into a vector
+		string aLine;
+		while (getline(ANSWERS, aLine))
+		{
+			answerVector.push_back(aLine);
+		}
 
 		cout << "Practice Assignment: " << endl;
 		//Print header in output file
@@ -129,7 +162,12 @@ int main()
 
 			solution = practice(solution, assignmentVector, practiceTracker);
 			fileStuff(PFILE, solution);
-			answer(solution, PFILE);
+			practiceTracker++;
+			if (answer(solution, PFILE, answerVector))
+				gradeTracker++;
+
+			//remove the first element in the "answer" vector
+			answerVector.erase(answerVector.begin());
 
 			cout << endl << endl << "Would you like to continue practicing? (Enter 1 to continue, 0 to exit)" << endl;
 			cin >> cont;
@@ -138,12 +176,20 @@ int main()
 
 		} while (cont && !assignmentVector.empty());
 
+		//print grades to file!
+		GRADES << "Practice Assignment" << endl << endl << fName << " " << lName << endl << "Professor "
+			<< instructor << endl << "Student Number " << ID;
+		GRADES << endl << endl << "Final Grade: " << gradeTracker << "/" << practiceTracker;
+
+		//tell user the file name
 		cout << endl << "Thank you for completing this practice! Your file has been saved as PracticeFile.txt";
 	}
 	else if (option) //Homework
 	{
-		outFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/HomeworkFile.txt";
-		probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/assignedProblems.txt";
+		outFileName = myDocumentString + "/Visual Studio 2017/HomeworkFile.txt";
+		probFileName = myDocumentString + "/Visual Studio 2017/assignedProblems.txt";
+		ansFileName = myDocumentString + "/Visual Studio 2017/assignmentAnswers.txt";
+		gradeFileName = myDocumentString + "/Visual Studio 2017/gradeFile.txt";
 		
 		//open output file
 		HFILE.open(outFileName);
@@ -173,12 +219,29 @@ int main()
 			exit(1);
 		}
 
+		//open problem answer file
+		ANSWERS.open(ansFileName);
+		if (!ANSWERS)
+		{
+			cout << "Unable to open problem file" << endl;
+			system("pause");
+			exit(1);
+		}
+
 		//Read professor's file into a vector
 		string line;
 		while (getline(ASSIGNMENT, line))
 		{
 			assignmentVector.push_back(line);
 		}
+
+		//Read professor's answer file into a vector
+		string aLine;
+		while (getline(ANSWERS, aLine))
+		{
+			answerVector.push_back(aLine);
+		}
+
 
 		cout << "Homework Assignment: " << endl;
 
@@ -198,7 +261,12 @@ int main()
 
 			solution = homework(solution, assignmentVector, homeworkTracker);
 			fileStuff(HFILE, solution);
-			answer(solution, HFILE);
+			homeworkTracker++;
+			if (answer(solution, HFILE, answerVector))
+				gradeTracker++;
+
+			//erase front of answer vector
+			answerVector.erase(answerVector.begin());
 
 			cout << endl << endl << "Would you like to continue on the assignment? (Enter 1 to continue, 0 to exit)" << endl;
 			cin >> cont;
@@ -207,6 +275,12 @@ int main()
 
 		} while (cont && !assignmentVector.empty());
 
+		//output grades to file!
+		GRADES << "Homework Assignment" << endl << endl << fName << " " << lName << endl << "Professor " 
+			<< instructor << endl << "Student Number " << ID;
+		GRADES << endl << endl <<"Final Grade: " << gradeTracker << "/" << homeworkTracker;
+
+		//tell user the file name
 		cout << endl << "Thank you for completing this assignment! Your file has been saved as HomeworkFile.txt";
 	}
 	else
@@ -227,10 +301,25 @@ int main()
 }
 
 //print out answer at the end of the File and at the bottom of the screen
-void answer(queue<string> solution, ofstream& FILE)
+bool answer(queue<string> solution, ofstream& FILE, vector<string> answers)
 {
 	cout << endl <<  "Final Solution: " << endl << solution.back();
 	FILE << endl << endl <<  "Final Solution: " << endl << solution.back();
+
+	if (solution.back() == answers.front())
+	{
+		cout << endl << "Solution is correct!";
+		FILE << "\nCORRECT!" << endl;
+
+		return TRUE;
+	}
+	else
+	{
+		cout << endl << "Solution is incorrect!";
+		FILE << "\nINCORRECT!" << endl;
+
+		return FALSE;
+	}
 }
 
 //read in user data for practice problems

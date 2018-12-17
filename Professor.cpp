@@ -3,7 +3,10 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <shlobj.h>
 using namespace std;
+
+#pragma comment(lib, "shell32.lib")
 
 int main()
 {
@@ -12,21 +15,25 @@ int main()
 	bool retry = 0, stop = 0;
 	string temp, probFileName, ansFileName;
 
+	CHAR my_documents[MAX_PATH];
+	HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents);
+	string myDocumentString(my_documents);
+
 	do {
-	
+
 		cout << "Would you like to create practice or homework problems? (0 for practice, 1 for homework)  ";
 		cin >> answer;
-			
+
 		retry = 0;
 		if (answer == 0)
 		{
 			system("cls");
-			probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/practiceProblems.txt";
+			probFileName = myDocumentString + "/Visual Studio 2017/practiceProblems.txt";
 			PROBLEMS.open(probFileName);
 
 			cout << "Enter problems below (without spaces)!" << endl <<
 				"Press Enter to move to the next problem. Enter 'END' to finish assignment. " << endl << endl;
-			
+
 			while (!stop)
 			{
 				cin >> temp;
@@ -42,7 +49,7 @@ int main()
 			cout << "Enter solutions for your problems below (without spaces)!" << endl <<
 				"Press Enter to move to the next problem. Enter 'END' to finish the answer key. " << endl << endl;
 
-			ansFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/practiceAnswers.txt";
+			ansFileName = myDocumentString + "/Visual Studio 2017/practiceAnswers.txt";
 			ANSWERS.open(ansFileName);
 
 			stop = 0;
@@ -64,7 +71,7 @@ int main()
 		else if (answer == 1)
 		{
 			system("cls");
-			probFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/assignedProblems.txt";
+			probFileName = myDocumentString + "/Visual Studio 2017/assignedProblems.txt";
 			PROBLEMS.open(probFileName);
 
 			cout << "Enter problems below (without spaces)!" << endl <<
@@ -85,7 +92,7 @@ int main()
 			cout << "Enter solutions for your problems below (without spaces):" << endl <<
 				"Press Enter to move to the next problem. Enter 'END' to finish the answer key. " << endl << endl;
 
-			ansFileName = "C:/Users/ctowne/Documents/Visual Studio 2017/assignmentAnswers.txt";
+			ansFileName = myDocumentString + "/Visual Studio 2017/assignmentAnswers.txt";
 			ANSWERS.open(ansFileName);
 
 			stop = 0;
@@ -113,5 +120,5 @@ int main()
 	} while (retry);
 
 	system("pause");
-	return 0; 
+	return 0;
 }
